@@ -1,283 +1,133 @@
 <!DOCTYPE html>
-<html lang="es"></html>
+<html lang="es">
+
 <head>
-<meta name="description" content="Convertidor de cookies de formato netscape a json">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<title>Netscape a Json</title>
-<link rel="icon" href="icono.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="Netscape a JSON" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="color-scheme" content="dark" />
+  <title>Netscape a JSON</title>
+  <link rel="icon" href="icono.png" />
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-<style>
-  
-    body {
-        background: radial-gradient(#1d2431, #020c1af5);
-        font-family: Arial, sans-serif;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 0;
-        width: auto;
-        text-align: center;
-        background-repeat: repeat-y;
-        background-size: 100% 100%;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        margin: 0;
-        color: #fff;
-    }
-    
-    h1, h3 {
-        margin: 16px 0;
-    }
-    
-    textarea {
-        border: 1px solid rgb(103 103 103);
-        border-radius: 4px;
-        min-width: 700px;
-        max-width: 100%;
-        color: #fff;
-        background-color: #141c1b54;
-        padding: 6px;
-        margin: 8px;
-        outline: none;
-    }
-    
-    button,  input[type="file"]::file-selector-button{
-        padding: 4px 12px;
-        margin-top: 8px;
-        border: none;
-        user-select: none;
-        outline: none;
-        color: #000000;
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.4);
-        border-radius: 4px;
-    }
+  <div class="overlay" id="overlay" role="alert" aria-label="Cargando">
+    <div class="throbber"></div>
+  </div>
 
-    input[type="file"]::file-selector-button:hover{
-        color: white;
-    }
+  <header class="topbar">
+    <span class="badge">v2.0</span>
+    <div class="lang">
+      <label for="languageSelector" data-i18n="language">Idioma</label>
+      <select id="languageSelector">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </header>
 
-    button:hover{
-        color: white;
-    }
+  <main class="app">
+    <div class="hero">
+      <h1 data-i18n="title">Netscape a formato JSON</h1>
+      <p data-i18n="subtitle"></p>
+    </div>
 
-    /* Scrollbars */
-    *::-webkit-scrollbar {
-        width: 6px;
-        background-color: #000000;
-    }
-    
-    *::-webkit-scrollbar-track {
-        background-color: #000000;
-    }
-    
-    *::-webkit-scrollbar-thumb {
-        background-color: #252525;
-    }
+    <form id="conversionForm" novalidate>
+      <div class="panes">
+        <!-- Entrada -->
+        <section class="pane">
+          <div class="pane-head">
+            <label for="cook">Netscape</label>
+            <div class="pane-tools">
+              <button type="button" class="btn btn-ghost" id="btnPaste" data-i18n="paste">Pegar</button>
+              <button type="button" class="btn btn-ghost" id="btnClear" data-i18n="clear">Limpiar</button>
+            </div>
+          </div>
+          <textarea id="cook" name="cook" rows="10" spellcheck="false" autocomplete="off" autocapitalize="off"
+            data-i18n-placeholder="phNetscape"></textarea>
+          <div class="stats" id="stats" aria-live="polite"></div>
+        </section>
 
-    #conversionForm{
-        margin-top: 5%;
-    }
+        <!-- Salida -->
+        <section class="pane">
+          <div class="pane-head">
+            <label for="result">JSON</label>
+            <div class="pane-tools">
+              <button type="button" class="btn btn-ghost" id="btnCopy" data-i18n="copy">Copiar</button>
+            </div>
+          </div>
+          <textarea id="result" name="result" rows="10" spellcheck="false" readonly
+            data-i18n-placeholder="phJSON"></textarea>
+        </section>
+      </div>
 
-    /* marca de agua2 */
-    #watermark2 {
-        position: absolute;
-        left: 1%;
-        top: 1%;
-        color: rgba(255, 255, 255, 0.5);
-        font-size: 14px;
-        transform: rotate(0deg);
-        pointer-events: none;
-        user-select: none;
-     }
+      <!-- Archivos -->
+      <label class="dropzone" id="dropzone" for="file-input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V4m0 0l-4 4m4-4l4 4" />
+          <path d="M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4" />
+        </svg>
+        <strong data-i18n="dropTitle">Arrastra tus archivos .txt aquí</strong>
+        <span data-i18n="dropAction">o selecciona archivo(s)</span>
+        <input type="file" id="file-input" class="sr-only" accept=".txt,text/plain" multiple />
+      </label>
 
-    /* marca de agua */
-    #watermark {
-        position: absolute;
-        right: 1%;
-        top: 1%;
-        color: rgba(255, 255, 255, 0.5);
-        font-size: 14px;
-        transform: rotate(0deg);
-        pointer-events: none;
-        user-select: none;
-    }
+      <div class="files" id="filesBlock" hidden>
+        <div class="files-head">
+          <span id="filesTitle"></span>
+          <button type="button" class="btn btn-ghost" id="btnClearFiles" data-i18n="clearFiles">Quitar todos</button>
+        </div>
+        <ul class="file-list" id="fileList"></ul>
+      </div>
 
-    #©{
-        pointer-events: none;
-        user-select: none;
-        color: yellow;
-        margin-top: 9%;
-    }
+      <!-- Opciones y acciones -->
+      <div class="controls">
+        <label class="switch">
+          <input type="checkbox" id="keepTxtFormat" class="sr-only" />
+          <span class="track" aria-hidden="true"></span>
+          <span data-i18n="keepTxt">Mantener formato .txt</span>
+        </label>
 
-        .txt {
-        width: 70%;
-        /* margin: 10px 201px 0px; */
-        margin-left: 10%;
-        margin-right: 10%;
-    }
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="btnConvertir" data-i18n="btnConvert">Convertir y
+            copiar</button>
+          <button type="button" class="btn btn-success" id="convert" data-i18n="btnDownload">Convertir y
+            descargar</button>
+        </div>
 
-    @media (max-width: 767px) {
-    textarea {
-        min-width: 90%;
-    }
+        <p class="hint" data-i18n="hint"></p>
+      </div>
+    </form>
+  </main>
 
-    h1, h3 {
-    margin: 3px 0;
-    }
+  <footer class="footer">
+    <div id="copyright"></div>
+  </footer>
 
-    #conversionForm{
-        margin-top: 14%;
-    }}
-    
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    #cheker, #keepTxtFormat{
-    font-size: 15px;
-    border: none;
-     user-select: none;
-     outline: none;
-    }
+  <!-- JSZip solo se usa al descargar varios archivos a la vez -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script src="script.js" defer></script>
 
-</style>
+  <script>
+    //notas
+    const notas = {
+      //version: "v1.0.1",
+      build: "build 15.10.2026",
+      fecha: "Fecha inicial: 29-3-2024",
+      //by: 'By Colega/Edisson',
+    };
 
-    <div id="watermark2">By-colega/Edisson [TA]</div> <!-- id'marca de agua2'-->
-    <div id="watermark">version 1.5A</div> <!-- id'marca de agua2'-->
-
- <!-- formurarios y botones'-->
-<form id="conversionForm">
-    <h1>Convertir netscape a formato JSON</h1>
-    <h3>Netscape</h3>
-    <textarea name="cook" id="cook" rows="10" placeholder="Cookie en texto plano o base64" required></textarea>
-    <h3>JSON</h3>
-    <textarea name="result" id="result" rows="10" placeholder="Resultado"></textarea><br>
-    <div id="cheker"><input type="checkbox" id="keepTxtFormat"> Mantener formato .txt<br></div>
-    <button type="button" id="btnConvertir">Convertir</button>
-    <button type="button" id="btnCopiar">Copiar</button>
-    <button type="button" id="convert">Descargar y Covertir</button>
-    <input type="file" accept='text/plain' id="file-input" multiple onchange='openFile(event)'>
-    <div id="©">© 2024. All rights reserved.</div>
-</form>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-
-<script>
-    // boton convertir
-    document.getElementById('btnConvertir').addEventListener('click', function() {
-    var textoNetscape = document.getElementById('cook').value.trim();
-    if (textoNetscape === '') {
-    document.getElementById('result').value = '';
-    return;
-    }
-
-    var cookies = extractCookies(textoNetscape); // Utilizar la función extractCookies
-
-    // Convierte el arreglo de cookies a formato JSON
-    var jsonResultado = JSON.stringify(cookies, null, 2);
-    document.getElementById('result').value = jsonResultado;
-
-    // Limpiar el textarea "cook"
-    document.getElementById('cook').value = '';
-    });
-    // Función para copiar el resultado JSON al portapapeles
-    document.getElementById('btnCopiar').addEventListener('click', function() {
-    var resultado = document.getElementById('result');
-    resultado.select();
-    document.execCommand('copy');
-});
-
-    // Función para procesar archivos
-    function openFile(event) {
-    var input = event.target;
-    files = input.files;
-    var convertButton = document.getElementById('convert');
-    convertButton.onclick = function () {
-    var zip = new JSZip(); // Crear un nuevo objeto JSZip
-    var promises = []; // Array para almacenar las promesas de carga de archivos
-    for (var i = 0; i < files.length; i++) {
-    var file_obj = files[i];
-    var filename = file_obj.name;
-    promises.push(convertToJSON(file_obj, zip)); // Agregar la promesa de conversión a JSON al array
-    }
-    Promise.all(promises).then(function () {
-    // Una vez que se han agregado todos los archivos al ZIP, descargar el archivo ZIP
-    zip.generateAsync({ type: "blob" }).then(function (blob) {
-    download(blob, 'Cookies.zip', 'application/zip'); // Descargar el archivo ZIP
-});
-});
-};
-}
-
-// Función para convertir un archivo a JSON y agregarlo al archivo ZIP
-function convertToJSON(file, zip) {
-    return new Promise(function (resolve, reject) {
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            var fileData = e.target.result;
-            var decodedData = atob(fileData.split(',')[1]); // Decodificar el contenido base64
-            var cookie_string = decodedData;
-            var cookies = extractCookies(cookie_string);
-            var json = JSON.stringify(cookies, null, 4);
-
-            // Verificar si la casilla de verificación está marcada
-            if (document.getElementById('keepTxtFormat').checked) {
-                var fileName = file.name; // Mantener el nombre original del archivo
-            } else {
-                var fileName = file.name.replace(/\.txt$/, '.json'); // Reemplazar la extensión .txt con .json en el nombre del archivo
-            }
-
-            zip.file(fileName, json); // Agregar el archivo JSON al archivo ZIP y cambia el formato
-            resolve(); // Resolver la promesa después de agregar el archivo
-        };
-
-        reader.onerror = function (e) {
-            reject(e); // Rechazar la promesa en caso de error
-        };
-        reader.readAsDataURL(file); // Leer el archivo como URL de datos
-    });
-}
-
-
-// Función para descargar un archivo
-function download(blob, name, type) {
-var a = document.createElement("a");
-a.href = URL.createObjectURL(blob);
-a.download = name;
-document.body.appendChild(a);
-a.click();
-}
-
-// convertir cookies
-function extractCookies(text) {
-    var cookies = [];
-    var lines = text.split("\n");
-    lines.forEach(function (line, index) {
-    var tokens = line.split("\t");
-    if (tokens.length == 7) {
-            tokens = tokens.map(function (e) {
-            return e.trim();
-            });
-            var cookie = {};
-            cookie.name = tokens[5];
-            cookie.value = tokens[6];
-            cookie.domain = tokens[0];
-            cookie.hostOnly = false;
-            cookie.path = tokens[2];
-            cookie.secure = tokens[3] === 'TRUE';
-            cookie.httpOnly = false;
-            cookie.session = false;
-            cookie.storeId = "firefox-default";
-            var timestamp = tokens[4];
-            if (timestamp.length == 17) {
-            timestamp = Math.floor(timestamp / 1000000 - 11644473600);
-            }
-            cookie.expirationDate = parseInt(timestamp);
-            cookies.push(cookie);
-        }
-    });
-    return cookies;
-}
-</script>
+    //console.log(notas['version']);
+    console.log(notas["build"]);
+    console.log(notas["fecha"]);
+    //console.log(notas['by']);
+  </script>
 </body>
+
+</html>
